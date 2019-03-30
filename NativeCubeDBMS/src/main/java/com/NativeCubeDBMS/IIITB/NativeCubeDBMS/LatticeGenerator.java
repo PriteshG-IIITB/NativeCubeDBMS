@@ -1,34 +1,62 @@
 package com.NativeCubeDBMS.IIITB.NativeCubeDBMS;
-//import java.io.*;
-//import java.util.*;
+import java.io.*;
+import java.util.*;
 public class LatticeGenerator
 {
-//	public void createLatticeOfCuboids(char []set,int set_size,String dataFile)
-//	{
-//		/*set_size of power set of a set with set_size n is (2^n )*/
-//        long pow_set_size =  (long)Math.pow(2, set_size); 
-//        List<Double> addrList= new LinkedList<Double>(); 
-//        /*Run from counter 000..1 to 111..1*/
-//        for(int counter = 0; counter <  
-//                pow_set_size; counter++) 
-//        { 
-//            for(int j = 1; j < set_size; j++) 
-//            { 
-//                /* Check if jth bit in the  counter is set If set then  
-//                Use dimension file of jth column to create cuboid node in lattice */
-//                if((counter & (1 << j)) > 0) 
-//                {
-//                	if(addrList.isEmpty()){addrList=getAddr(j,dataFile);}
-//        			else{addrList.retainAll(getAddr(j,dataFile));}
-//                }    
-//            } 
-//              
-//            System.out.println(); 
-//        } 
-//	}
-//
-//	private List<Double> getAddr(int j, String dataFile) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	public void createLatticeOfCuboids(char []set,int set_size,String dataFile)throws Exception
+	{
+		/*set_size of power set of a set with set_size n is (2^n )*/
+        long pow_set_size =  (long)Math.pow(2, set_size); 
+        FileOutputStream fos;ObjectOutputStream wo;String cuboidName;
+        LinkedList<Double> addrList= new LinkedList<Double>();
+        LinkedList<Double> taddrList= new LinkedList<Double>();
+        HashMap<String, LinkedList<Double>> hshMp = new HashMap<String, LinkedList<Double>>();
+        HashMap<String, LinkedList<Double>> thshMp = new HashMap<String, LinkedList<Double>>();
+        HashMap<String, LinkedList<Double>> reshshMp = new HashMap<String, LinkedList<Double>>();
+        /*Run from counter 000..1 to 111..1*/
+        for(int counter = 1; counter <  pow_set_size; counter++) 
+        { 
+            cuboidName="";
+        	for(int j = 0; j < set_size; j++) 
+            { 
+            	/* Check if jth bit in the  counter is set If set then  
+                Use dimension file of jth column to create cuboid nodes in lattice */
+                if((counter & (1 << j)) > 0) 
+                {
+                	cuboidName+=j;
+                	if(hshMp.isEmpty()){hshMp=getHshDim(j,dataFile);}
+                	else
+                	{
+                		thshMp=getHshDim(j, dataFile);
+                		reshshMp=new HashMap<String, LinkedList<Double>>();
+                		for(String k:hshMp.keySet())
+                		{
+                			addrList=hshMp.get(k);
+                			for(String tk:thshMp.keySet())
+                			{
+                				taddrList=thshMp.get(tk);
+                				taddrList.retainAll(addrList);
+                				if(!taddrList.isEmpty())
+                				{reshshMp.put(k+","+tk, taddrList);}
+                			}
+                		}hshMp=reshshMp;
+                	}
+                }    
+            }
+            fos= new FileOutputStream(new File("db_"+dataFile+"/lattice/cuboid"+cuboidName));
+			wo= new ObjectOutputStream(fos);wo.writeObject(hshMp);
+			wo.close();fos.close();
+        } 
+	}
+
+	private HashMap<String, LinkedList<Double>> getHshDim(int j, String dataFile) throws Exception
+	{
+		File file = new File("db_"+dataFile+"/dimensions/dim"+j);
+	    FileInputStream f = new FileInputStream(file);
+	    ObjectInputStream s = new ObjectInputStream(f);
+	    HashMap<String, LinkedList<Double>> dim = (HashMap<String, LinkedList<Double>>)s.readObject();
+	    s.close();f.close();
+	    return dim;
+	}
+
 }

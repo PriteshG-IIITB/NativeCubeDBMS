@@ -6,17 +6,27 @@ public class App
     {
         String dataFile="sales_datawarehouse";
         //set create to true to create base & dimension index files.We need UI interaction here.
-        boolean create=false;
+        boolean create=false,genrt=true;
         try
         {
         	if(create==true){loadData(dataFile);}
-        	readData(dataFile);
+        	if(genrt==true){genrateLatticeOfCuboids(dataFile);} 
+        	//readData(dataFile);
 		}catch (Exception e)
         {e.printStackTrace();}
   
     }
 
-    //To read Data as per OLAP operations :slice/dice/roll up/drill down.We need UI interaction here.
+    //To generate Lattice of Cuboids.
+    private static void genrateLatticeOfCuboids(String dataFile)throws Exception
+    {
+		LatticeGenerator lattice= new LatticeGenerator();
+		//column no. of each dimensions need schema file here.
+		char[]set= {'0','1','2','3'};
+		lattice.createLatticeOfCuboids(set, set.length, dataFile);
+	}
+
+	//To read Data as per OLAP operations :slice/dice/roll up/drill down.We need UI interaction here.
 	private static void readData(String dataFile)throws Exception
 	{
 		ReadData read= new ReadData();
@@ -36,5 +46,6 @@ public class App
 	{
 		new File("db_"+dataFile+"/base").mkdirs();
 		new File("db_"+dataFile+"/dimensions").mkdirs();
+		new File("db_"+dataFile+"/lattice").mkdirs();
 	}
 }
