@@ -6,11 +6,13 @@ public class App
     {
         String dataFile="sales_datawarehouse";
         //set create to true to create base & dimension index files.We need UI interaction here.
-        boolean create=false,genrt=true;
+        boolean create=true,genrt=true,metadimgenrt=true;
         try
         {
         	if(create==true){loadData(dataFile);}
         	if(genrt==true){genrateLatticeOfCuboids(dataFile);} 
+        	if(metadimgenrt==true) {genrateDimensionMetaData(dataFile);}
+        	
         	//readData(dataFile);
 		}catch (Exception e)
         {e.printStackTrace();}
@@ -47,5 +49,12 @@ public class App
 		new File("db_"+dataFile+"/base").mkdirs();
 		new File("db_"+dataFile+"/dimensions").mkdirs();
 		new File("db_"+dataFile+"/lattice").mkdirs();
+		new File("db_"+dataFile+"/dimensionMetadata").mkdirs();
+	}
+	private static void genrateDimensionMetaData(String dataFile) throws Exception
+	{
+		MetaDimGenerator dimMeta= new MetaDimGenerator();
+		dimMeta.genratedimMeta(dataFile);
+		
 	}
 }
