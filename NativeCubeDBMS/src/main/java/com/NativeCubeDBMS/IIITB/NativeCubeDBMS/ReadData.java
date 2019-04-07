@@ -4,7 +4,7 @@ import java.util.*;
 
 public class ReadData 
 {
-	public void fetch(String dataFile) throws Exception
+	public void fetch(Properties prop) throws Exception
 	{
 		HashMap<Integer,String> dimHsh = new HashMap<Integer,String>();
 		//this is sample input given in dimHSh in column no. & column name we need schema file here
@@ -12,27 +12,28 @@ public class ReadData
 		List<Double> addrList= new LinkedList<Double>();
 		for(int key:dimHsh.keySet())
 		{
-			if(addrList.isEmpty()){addrList=getAddr(dimHsh.get(key),key,dataFile);}
-			else{addrList.retainAll(getAddr(dimHsh.get(key),key,dataFile));}
+			if(addrList.isEmpty()){addrList=getAddr(dimHsh.get(key),key,prop);}
+			else{addrList.retainAll(getAddr(dimHsh.get(key),key,prop));}
 		}
-	    getFact(addrList,dataFile);
+	    getFact(addrList,prop);
 	}
-	private void getFact(List<Double> addrList, String dataFile)throws Exception 
+	private void getFact(List<Double> addrList, Properties prop)throws Exception 
 	{
 		FileInputStream fs;ObjectInputStream os;
+		fs=new FileInputStream(prop.getProperty("basePath")+"1");
+		os= new ObjectInputStream(fs);
+		HashMap<Double,ArrayList<String>> baser= (HashMap<Double,ArrayList<String>>)os.readObject();
 		ArrayList<String> factRow;
 		for(double d:addrList)
 		{
-			fs=new FileInputStream("db_"+dataFile+"/base/bd"+d);
-			os= new ObjectInputStream(fs);
-			factRow=(ArrayList<String>) os.readObject();
+			factRow=baser.get(d);
 			System.out.println(factRow.toString());
-			os.close();fs.close();
 		}
+		os.close();fs.close();
 	}
-	private List<Double> getAddr(String key, int i, String dataFile)throws Exception
+	private List<Double> getAddr(String key, int i, Properties prop)throws Exception
 	{
-		HashMap<String, LinkedList<Double>> dim=readDim("db_"+dataFile+"/dimensions/dim"+i);
+		HashMap<String, LinkedList<Double>> dim=readDim(prop.getProperty("dimensionsPath")+i);
 		List<Double> addrLst=dim.get(key);
 		return addrLst;
 	}

@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.*;
 public class LatticeGenerator
 {
-	public void createLatticeOfCuboids(char []set,int set_size,String dataFile)throws Exception
+	public void createLatticeOfCuboids(char []set,int set_size,Properties prop)throws Exception
 	{
 		/*set_size of power set of a set with set_size n is (2^n )*/
         long pow_set_size =  (long)Math.pow(2, set_size); 
@@ -24,10 +24,10 @@ public class LatticeGenerator
                 if((counter & (1 << j)) > 0) 
                 {
                 	cuboidName+=j;
-                	if(hshMp.isEmpty()){hshMp=getHshDim(j,dataFile);}
+                	if(hshMp.isEmpty()){hshMp=getHshDim(j,prop);}
                 	else
                 	{
-                		thshMp=getHshDim(j, dataFile);
+                		thshMp=getHshDim(j, prop);
                 		reshshMp=new HashMap<String, LinkedList<Double>>();
                 		for(String k:hshMp.keySet())
                 		{
@@ -43,15 +43,15 @@ public class LatticeGenerator
                 	}
                 }    
             }
-            fos= new FileOutputStream(new File("db_"+dataFile+"/lattice/cuboid"+cuboidName));
+            fos= new FileOutputStream(new File(prop.getProperty("latticePath")+cuboidName));
 			wo= new ObjectOutputStream(fos);wo.writeObject(hshMp);
 			wo.close();fos.close();
         } 
 	}
 
-	private HashMap<String, LinkedList<Double>> getHshDim(int j, String dataFile) throws Exception
+	private HashMap<String, LinkedList<Double>> getHshDim(int j, Properties prop) throws Exception
 	{
-		File file = new File("db_"+dataFile+"/dimensions/dim"+j);
+		File file = new File(prop.getProperty("dimensionsPath")+j);
 	    FileInputStream f = new FileInputStream(file);
 	    ObjectInputStream s = new ObjectInputStream(f);
 	    HashMap<String, LinkedList<Double>> dim = (HashMap<String, LinkedList<Double>>)s.readObject();

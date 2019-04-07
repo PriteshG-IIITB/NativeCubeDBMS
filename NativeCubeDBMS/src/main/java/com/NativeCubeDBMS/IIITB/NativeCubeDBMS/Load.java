@@ -7,46 +7,54 @@ import org.apache.poi.ss.usermodel.*;
 
 public class Load
 {
-	
-	public void createBase(String dataFile)throws Exception
+	public void createBase(Properties prop)throws Exception
 	{
-		FileInputStream fs= new FileInputStream(new File(dataFile+".xlsx"));
+		FileInputStream fs= new FileInputStream(new File(prop.getProperty("datafile")));
 		XSSFWorkbook wb= new XSSFWorkbook(fs);
 		XSSFSheet sheet = wb.getSheetAt(0);
-		FileOutputStream fos;ObjectOutputStream wo; 
+		FileOutputStream fos;ObjectOutputStream wo;int filenos=1; 
+		fos= new FileOutputStream(new File(prop.getProperty("basePath")+filenos));filenos++;
+		wo= new ObjectOutputStream(fos);
 		try 
 		{	
-			ArrayList<String> aRow;double addr;
+			HashMap<Double,ArrayList<String>> baser= new HashMap<Double,ArrayList<String>>();
+			ArrayList<String> aRow;double addr,keys=0;
 			for(Row row :sheet)
 			{
 				addr=row.getRowNum();
 				if(addr==0)
 				{
 					for (Cell cell :row)
-					{createDimension(cell.getColumnIndex(),dataFile);}
+					{createDimension(cell.getColumnIndex(),prop);}
 					continue;
 				}
-				fos= new FileOutputStream(new File("db_"+dataFile+"/base/bd"+addr));
-				wo= new ObjectOutputStream(fos);
 				aRow= new ArrayList<String>();
 				for (Cell cell :row)
-				{	
-					aRow.add(cell.toString());
+				{aRow.add(cell.toString());}
+				if(keys<=Double.parseDouble(prop.getProperty("hashMapLimit")))
+				{baser.put(addr, aRow);keys++;}
+				else 
+				{
+					wo.writeObject(baser);wo.close();fos.close();
+					fos= new FileOutputStream(new File(prop.getProperty("basePath")+"base"+filenos));filenos++;
+					wo= new ObjectOutputStream(fos);
+					baser= new HashMap<Double,ArrayList<String>>();
+					baser.put(addr, aRow);keys=1;
 				}
-				wo.writeObject(aRow);wo.close();fos.close();
 			}
+			wo.writeObject(baser);wo.close();fos.close();
 		} catch (Exception e) 
 		{e.printStackTrace();}
 		finally
 		{fs.close();wb.close();}	
 	}
 	
-	private void createDimension(int columnIndex,String dataFile) throws Exception
+	private void createDimension(int columnIndex,Properties prop) throws Exception
 	{
-		FileInputStream fs= new FileInputStream(new File(dataFile+".xlsx"));
+		FileInputStream fs= new FileInputStream(new File(prop.getProperty("datafile")));
 		XSSFWorkbook wb= new XSSFWorkbook(fs);
 		XSSFSheet sheet = wb.getSheetAt(0);
-		FileOutputStream fos= new FileOutputStream(new File("db_"+dataFile+"/dimensions/dim"+columnIndex));
+		FileOutputStream fos= new FileOutputStream(new File(prop.getProperty("dimensionsPath")+columnIndex));
 		ObjectOutputStream wo= new ObjectOutputStream(fos);
 		try
 		{
