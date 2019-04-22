@@ -16,12 +16,15 @@ public class LatticeGenerator
         /*Run from counter 000..1 to 111..1*/
         for(int counter = 1; counter <  pow_set_size; counter++) 
         { 
-            cuboidName="";
+        																																																																																																																																																																															cuboidName="";
+            hshMp = new HashMap<String, LinkedList<Double>>();
+            thshMp = new HashMap<String, LinkedList<Double>>();
+            reshshMp = new HashMap<String, LinkedList<Double>>();
         	for(int j = 0; j < set_size; j++) 
             { 
             	/* Check if jth bit in the  counter is set If set then  
                 Use dimension file of jth column to create cuboid nodes in lattice */
-                if((counter & (1 << j)) > 0) 
+        		if((counter & (1 << j)) > 0) 
                 {
                 	cuboidName+=j;
                 	if(hshMp.isEmpty()){hshMp=getHshDim(j,prop);}
@@ -34,12 +37,12 @@ public class LatticeGenerator
                 			addrList=hshMp.get(k);
                 			for(String tk:thshMp.keySet())
                 			{
-                				taddrList=thshMp.get(tk);
+                				taddrList=(LinkedList<Double>) thshMp.get(tk).clone();
                 				taddrList.retainAll(addrList);
                 				if(!taddrList.isEmpty())
-                				{reshshMp.put(k+","+tk, taddrList);}
+                				{reshshMp.put(k+","+tk,(LinkedList<Double>) taddrList.clone());}
                 			}
-                		}hshMp=reshshMp;
+                		}hshMp.clear();hshMp.putAll(reshshMp);
                 	}
                 }    
             }

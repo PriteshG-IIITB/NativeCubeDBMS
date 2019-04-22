@@ -8,7 +8,7 @@ public class ReadData
 	{
 		HashMap<Integer,String> dimHsh = new HashMap<Integer,String>();
 		//this is sample input given in dimHSh in column no. & column name we need schema file here
-		dimHsh.put(0, "P1");dimHsh.put(2, "C1");dimHsh.put(3, "S2");
+		dimHsh.put(0, "R1");dimHsh.put(1, "C1");dimHsh.put(4, "P1");
 		List<Double> addrList= new LinkedList<Double>();
 		for(int key:dimHsh.keySet())
 		{
