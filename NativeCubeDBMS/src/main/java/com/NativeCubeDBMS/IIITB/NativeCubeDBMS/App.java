@@ -1,30 +1,80 @@
 package com.NativeCubeDBMS.IIITB.NativeCubeDBMS;
 import java.io.*;
 import java.util.Properties;
+import java.util.Scanner;
 public class App 
 {
 	static Properties prop=new Properties();
-    public static void main( String[] args )
+    public static void main( String[] args ) throws Exception
     {	 
-    	long startTime = System.currentTimeMillis();
-    	//load configuration file
-    	try{prop.load(new FileInputStream(new File("config.properties")));}
-		catch (Exception e)
-		{e.printStackTrace();}
-    	//set create to true to create base & dimension index files.We need UI interaction here.
-    	boolean create=false;//genrt=false,metadimgenrt=false;
-        try
-        {
-        	if(create==true){loadData(prop);}
-        	if(create==true){genrateLatticeOfCuboids(prop);} 
-        	if(create==true) {genrateDimensionMetaData(prop);}
-        	else{readData(prop);}
-        	System.out.println("Done...");
-		}catch (Exception e)
-        {e.printStackTrace();}
-        System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
+    	int ip=-1,check=-1;String filename;
+    	System.out.println("=========Native Cube DBMS======");
+    	Scanner sc= new Scanner(System.in);
+    	while(true)
+    	{
+	    	System.out.println("1.Create Datawarehouse");
+	    	System.out.println("2.Use Existing Datewarehouse");
+	    	System.out.println("3.Exit");
+	    	ip=Integer.parseInt(sc.next());
+	    	if(ip>=3 || ip<1)break;
+	    	switch (ip)
+	    	{
+				case 1: 
+						System.out.println("Select Datawarehouse file(.xlsx): ");
+						filename=sc.next();
+						createDataWareHouse(filename);
+						break;
+				case 2:
+						System.out.println("Enter Datawarehouse Name: ");
+						filename=sc.next();prop=new Properties();
+						try
+						{
+							prop.load(new FileInputStream(new File(filename+"_config.properties")));
+							readData(prop,filename,sc);
+						}catch (Exception e){System.out.println("database doesnot exist..");}
+				default:break;
+			}
+	    	System.out.println("Do you wish to continue? \n 1->Yes 2->No");
+	    	check=Integer.parseInt(sc.next());
+	    	if(check==2)break;
+    	}
+    	sc.close();
     }
-
+    public static void createDataWareHouse(String filename) throws Exception
+	{
+		long startTime = System.currentTimeMillis();
+		filename=filename.substring(0,filename.length()-5);
+		createConfigFile(filename);
+		System.out.println("Config Property Successfully Created..");
+		prop=new Properties();
+		prop.load(new FileInputStream(new File(filename+"_config.properties")));
+		loadData(prop);
+		genrateLatticeOfCuboids(prop);
+		genrateDimensionMetaData(prop);
+		System.out.println("Done...");
+		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
+	}
+    private  static void createConfigFile(String filename) throws Exception
+    {
+    	File cnf= new File(filename+"_config.properties");
+    	cnf.createNewFile();prop=new Properties();
+    	prop.load(new FileInputStream(new File(filename+"_config.properties")));
+    	prop.setProperty("hashMapLimit", "70000000");
+    	prop.setProperty("datafile", filename+".xlsx");
+    	prop.setProperty("type", "xlsx");
+    	prop.setProperty("schemaPath", "db_"+filename+"/schema/");
+    	prop.setProperty("baseDirPath", "db_"+filename+"/base/");
+    	prop.setProperty("dimensionsDirPath", "db_"+filename+"/dimensions/");
+    	prop.setProperty("dimensionInfoDirPath", "db_"+filename+"/dimensionMetadata/");
+    	prop.setProperty("latticeDirPath", "db_"+filename+"/lattice/");
+    	prop.setProperty("basePath", "db_"+filename+"/base/base");
+    	prop.setProperty("dimensionsPath", "db_"+filename+"/dimensions/dim");
+    	prop.setProperty("dimensionInfoPath","db_"+filename+"/dimensionMetadata/");
+    	prop.setProperty("latticePath", "db_"+filename+"/lattice/cuboid");
+    	FileOutputStream out = new FileOutputStream(filename+"_config.properties");
+    	prop.store(out, null);
+    	out.close();
+	}
     //To generate Lattice of Cuboids.
     private static void genrateLatticeOfCuboids(Properties prop)throws Exception
     {
@@ -36,12 +86,59 @@ public class App
 	}
 
 	//To read Data as per OLAP operations :slice/dice/roll up/drill down.We need UI interaction here.
-	private static void readData(Properties prop)throws Exception
+	private static void readData(Properties prop,String filename,Scanner sc)throws Exception
 	{
-		ReadData read= new ReadData();
-		//read.fetch(prop);
-		MOLAP op= new MOLAP();
-		op.getDice("01", prop);
+		int ip=-1;
+		while(true)
+    	{
+			sc= new Scanner(System.in);
+			System.out.println("Select MOLAP Operation:");
+			System.out.println("1.Slice");
+	    	System.out.println("2.Dice");
+	    	System.out.println("3.Roll-Up/DrillDown");
+	    	System.out.println("4.Back");
+	    	ip=Integer.parseInt(sc.nextLine());
+	    	if(ip==4) {return;}
+	    	if(ip<1 || ip>4)continue;
+	    	File folder;File[] listOfFiles;ReadData read;
+	    	switch (ip)
+	    	{
+				case 1:
+						System.out.println("Enter one of available dimension:");
+						System.out.println("Dimensions:");
+						folder= new File(prop.getProperty("dimensionInfoDirPath"));
+						listOfFiles = folder.listFiles();
+						for (int i = 0; i < listOfFiles.length; i++)
+						{
+						  if (listOfFiles[i].isFile())
+						  {System.out.println(listOfFiles[i].getName());} 
+						}
+						String dimfile=sc.nextLine();
+						read= new ReadData();
+						read.slice(prop,dimfile,sc);
+						break;
+				case 2:
+					System.out.println("Dimensions:");
+					System.out.println("Enter from available dimension:");
+					folder = new File(prop.getProperty("dimensionInfoDirPath"));
+					listOfFiles = folder.listFiles();
+					for (int i = 0; i < listOfFiles.length; i++)
+					{
+					  if (listOfFiles[i].isFile())
+					  {System.out.println(listOfFiles[i].getName());} 
+					}
+					String[] dimfiles=sc.nextLine().split(",");
+					read= new ReadData();
+					read.dice(prop,dimfiles,sc);
+					break;
+				case 3:
+					MOLAP ml=new MOLAP();
+					ml.getLattice(prop,sc);
+					break;
+				default:
+						break;
+			}
+    	}
 	}
 	
     //To create base & dimension index files

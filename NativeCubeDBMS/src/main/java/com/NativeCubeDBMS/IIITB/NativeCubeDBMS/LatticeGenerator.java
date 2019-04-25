@@ -40,7 +40,7 @@ public class LatticeGenerator
                 				taddrList=(LinkedList<Double>) thshMp.get(tk).clone();
                 				taddrList.retainAll(addrList);
                 				if(!taddrList.isEmpty())
-                				{reshshMp.put(k+","+tk,(LinkedList<Double>) taddrList.clone());}
+                				{reshshMp.put(k+"\t ||"+tk,(LinkedList<Double>) taddrList.clone());}
                 			}
                 		}hshMp.clear();hshMp.putAll(reshshMp);
                 	}
