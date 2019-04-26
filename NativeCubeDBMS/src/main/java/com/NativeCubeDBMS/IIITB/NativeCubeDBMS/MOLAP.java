@@ -13,6 +13,7 @@ public class MOLAP{
 		String code=ip[0];int factidx=Integer.parseInt(ip[1]);
 		System.out.println("Select Agreegation Operation: 1.Sum 2.Average 3.Count");
 		String agr=sc.nextLine();
+		long startTime = System.currentTimeMillis();
 		File cuboidfile = new File(prop.getProperty("latticePath")+code);
 		FileInputStream cfs = new FileInputStream(cuboidfile);
 	    ObjectInputStream cos = new ObjectInputStream(cfs);
@@ -60,7 +61,8 @@ public class MOLAP{
 		    	System.out.println(key + " \t ||"+addrList.size());
 		    }
 		}
-	    
+		System.out.println("===================================================");
+		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
 	    bsos.close();bsfs.close();
 	}
 	private String dispSchema(Properties prop,Scanner sc) throws Exception

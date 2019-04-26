@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.*;
 public class LatticeGenerator
 {
-	public void createLatticeOfCuboids(char []set,int set_size,Properties prop)throws Exception
+	public void createLatticeOfCuboids(int set_size,Properties prop)throws Exception
 	{
 		/*set_size of power set of a set with set_size n is (2^n )*/
         long pow_set_size =  (long)Math.pow(2, set_size); 

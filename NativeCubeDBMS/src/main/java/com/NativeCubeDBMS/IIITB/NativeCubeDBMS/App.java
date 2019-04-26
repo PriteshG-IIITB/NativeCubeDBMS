@@ -1,5 +1,6 @@
 package com.NativeCubeDBMS.IIITB.NativeCubeDBMS;
 import java.io.*;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.Scanner;
 public class App 
@@ -7,7 +8,7 @@ public class App
 	static Properties prop=new Properties();
     public static void main( String[] args ) throws Exception
     {	 
-    	int ip=-1,check=-1;String filename;
+    	int ip=-1;String filename,check="";
     	System.out.println("=========Native Cube DBMS======");
     	Scanner sc= new Scanner(System.in);
     	while(true)
@@ -15,18 +16,18 @@ public class App
 	    	System.out.println("1.Create Datawarehouse");
 	    	System.out.println("2.Use Existing Datewarehouse");
 	    	System.out.println("3.Exit");
-	    	ip=Integer.parseInt(sc.next());
+	    	ip=Integer.parseInt(sc.nextLine());
 	    	if(ip>=3 || ip<1)break;
 	    	switch (ip)
 	    	{
 				case 1: 
 						System.out.println("Select Datawarehouse file(.xlsx): ");
-						filename=sc.next();
+						filename=sc.nextLine();
 						createDataWareHouse(filename);
 						break;
 				case 2:
 						System.out.println("Enter Datawarehouse Name: ");
-						filename=sc.next();prop=new Properties();
+						filename=sc.nextLine();prop=new Properties();
 						try
 						{
 							prop.load(new FileInputStream(new File(filename+"_config.properties")));
@@ -35,8 +36,8 @@ public class App
 				default:break;
 			}
 	    	System.out.println("Do you wish to continue? \n 1->Yes 2->No");
-	    	check=Integer.parseInt(sc.next());
-	    	if(check==2)break;
+	    	check=sc.nextLine();
+	    	if(check.equals("2"))break;
     	}
     	sc.close();
     }
@@ -78,11 +79,15 @@ public class App
     //To generate Lattice of Cuboids.
     private static void genrateLatticeOfCuboids(Properties prop)throws Exception
     {
+    	FileInputStream fs;ObjectInputStream os;
+    	fs=new FileInputStream(prop.getProperty("schemaPath")+"dimSchema");
+		os= new ObjectInputStream(fs);
+		HashMap<Integer,String> dimhsh=(HashMap<Integer,String>)os.readObject();
+		os.close();fs.close();
+		int dimCount=dimhsh.size();dimhsh.clear();
 		LatticeGenerator lattice= new LatticeGenerator();
-		//column no. of each dimensions need schema file here.
-		char[]set= {'0','1','2','3','4','5'};
 		System.out.println("Generating Lattice Of Cuboids...");
-		lattice.createLatticeOfCuboids(set, set.length, prop);
+		lattice.createLatticeOfCuboids(dimCount, prop);
 	}
 
 	//To read Data as per OLAP operations :slice/dice/roll up/drill down.We need UI interaction here.

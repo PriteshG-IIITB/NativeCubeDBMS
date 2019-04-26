@@ -56,7 +56,9 @@ public class ReadData
 			sch=str.split(" ");
 			if(sch[colnum].equals(val)){idxlist.add(sch[0]);}
 		}
+		long startTime = System.currentTimeMillis();
 		getSlice(idxlist,prop,dimidx,factidx);
+		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
 		
 	}
 	public void dice(Properties prop, String[] dimfiles, Scanner sc)throws Exception
@@ -118,7 +120,9 @@ public class ReadData
 		for(Map.Entry<String , Integer> entry : dimidx.entrySet()){
 		    idx.put(entry.getValue(), entry.getKey());
 		}
+		long startTime = System.currentTimeMillis();
 		getDice(prop,idx,dimcol,fact,factidx);
+		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
 		
 	}
 	private void getSlice(ArrayList<String> idxlist, Properties prop,int dimidx,int factidx) throws Exception
@@ -133,6 +137,7 @@ public class ReadData
 		{
 			System.out.println(baser.get(d).toString());
 		}
+		System.out.println("=========================================================");
 	}
 	private ArrayList<String> getDimMeta(Properties prop,String dimFile) throws Exception
 	{
