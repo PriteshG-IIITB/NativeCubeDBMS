@@ -59,20 +59,24 @@ public class Load
 	
 	private void createDimension(Properties prop) throws Exception
 	{
-		FileInputStream fs= new FileInputStream(new File(prop.getProperty("datafile")));
+		FileInputStream fs;ObjectInputStream os;
+    	fs=new FileInputStream(prop.getProperty("schemaPath")+"dimSchema");
+		os= new ObjectInputStream(fs);
+		HashMap<Integer,String> dimhsh=(HashMap<Integer,String>)os.readObject();
+		os.close();fs.close();
+		int dimCount=dimhsh.size();dimhsh.clear();
+		//fs= new FileInputStream(new File(prop.getProperty("datafile")));
 		//XSSFWorkbook wb= new XSSFWorkbook(fs);
 		//XSSFSheet sheet = wb.getSheetAt(0);
-		Workbook wb = StreamingReader.builder()
-				 .sstCacheSize(100)    // buffer size to use when reading InputStream to file (defaults to 1024)
-		        .open(fs);            // InputStream or File for XLSX file (required)		
-		Sheet sheet=wb.getSheetAt(0);
-		//int dimCount=0;
+		Workbook wb;// = StreamingReader.builder()
+				 //.sstCacheSize(100)    // buffer size to use when reading InputStream to file (defaults to 1024)
+		        //.open(fs);            // InputStream or File for XLSX file (required)		
+		Sheet sheet;//=wb.getSheetAt(0);
 		System.out.println("Indexing Dimensions...");
 //		for(Row hrow :sheet)
 //		{dimCount=hrow.getLastCellNum();break;}wb.close();
-		for(int i=0;i<=5;i++)
+		for(int i=0;i<dimCount;i++)
 		{
-			if(i>5) {break;}
 			FileOutputStream fos= new FileOutputStream(new File(prop.getProperty("dimensionsPath")+i));
 			ObjectOutputStream wo= new ObjectOutputStream(fos);
 			try

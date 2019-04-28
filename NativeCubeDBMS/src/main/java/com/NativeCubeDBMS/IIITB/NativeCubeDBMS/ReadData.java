@@ -1,6 +1,7 @@
 package com.NativeCubeDBMS.IIITB.NativeCubeDBMS;
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 
 public class ReadData 
 {
@@ -22,28 +23,20 @@ public class ReadData
 		}
 		fs=new FileInputStream(prop.getProperty("schemaPath")+"factSchema");
 		os= new ObjectInputStream(fs);
-		HashMap<Integer,String> facthsh=(HashMap<Integer,String>)os.readObject();
 		os.close();fs.close();
-		System.out.println("Info about"+dimFile);
+		System.out.println("Info about "+dimFile);
 		System.out.println(dimMeta.get(0));
 		System.out.println("do you need more info yes/no");
 		ArrayList<String> dimMetaData=getDimMeta(prop,dimFile);
 		if(sc.nextLine().equals("yes"))
 		{for(String str :dimMetaData){System.out.println(str);}}
-		String col,val,fact;
+		String col,val;
 		System.out.println("Enter Slice Operation:");
 		System.out.println("Column:");
 		col=sc.nextLine();
 		System.out.println("Filter Value:");
 		val=sc.nextLine();
-		System.out.println("Fact:");
-		fact=sc.nextLine();
-		int colnum=0;int factidx=0;
-		for(int key :facthsh.keySet())
-		{
-			if(facthsh.get(key).equals(fact))
-			{factidx=dimhsh.size()+key-1;break;}
-		}
+		int colnum=0;
 		String[]sch=dimMeta.get(0).split(" ");
 		for(String str:sch)
 		{
@@ -57,7 +50,7 @@ public class ReadData
 			if(sch[colnum].equals(val)){idxlist.add(sch[0]);}
 		}
 		long startTime = System.currentTimeMillis();
-		getSlice(idxlist,prop,dimidx,factidx);
+		getSlice(idxlist,prop,dimidx);
 		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
 		
 	}
@@ -85,12 +78,12 @@ public class ReadData
 				System.out.println("Dimension: "+dimfile);
 				dimMetaData=getDimMeta(prop,dimfile);
 				{for(String str :dimMetaData){System.out.println(str);}}
+				System.out.println("======================================");
 			}
 			System.out.println("======================================");
 		}
-		System.out.println("Enter Dice Operation [dimension column,value],fact :");
-		String[]query= sc.nextLine().split(",");int ql=query.length;
-		String fact= query[ql-1];
+		System.out.println("Enter Dice Operation [dimension column,value]:");
+		String[]query= sc.nextLine().split(",");
 		int i=0,k;String dimcol="",dimval;
 		for(String dimfile: dimfiles)
 		{
@@ -109,23 +102,17 @@ public class ReadData
 		}
 		fs=new FileInputStream(prop.getProperty("schemaPath")+"factSchema");
 		os= new ObjectInputStream(fs);
-		HashMap<Integer,String> facthsh=(HashMap<Integer,String>)os.readObject();
-		os.close();fs.close();int factidx=0;
-		for(int key :facthsh.keySet())
-		{
-			if(facthsh.get(key).equals(fact))
-			{factidx=dimhsh.size()+key-1;break;}
-		}
+		os.close();fs.close();
 		HashMap<Integer, String> idx = new HashMap<Integer,String>();
 		for(Map.Entry<String , Integer> entry : dimidx.entrySet()){
 		    idx.put(entry.getValue(), entry.getKey());
 		}
 		long startTime = System.currentTimeMillis();
-		getDice(prop,idx,dimcol,fact,factidx);
+		getDice(prop,idx,dimcol);
 		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
 		
 	}
-	private void getSlice(ArrayList<String> idxlist, Properties prop,int dimidx,int factidx) throws Exception
+	private void getSlice(ArrayList<String> idxlist, Properties prop,int dimidx) throws Exception
 	{
 		List<Double> addrList= new LinkedList<Double>();
 		for(String str:idxlist)
@@ -133,6 +120,7 @@ public class ReadData
 			addrList.addAll(getAddr(str,dimidx,prop));
 		}
 		HashMap<Double,ArrayList<String>> baser=(HashMap<Double,ArrayList<String>>)getFact(addrList,prop);
+		printSchema(prop);
 		for(double d:addrList)
 		{
 			System.out.println(baser.get(d).toString());
@@ -148,7 +136,7 @@ public class ReadData
 		os.close();fs.close();
 		return dimMetaData;
 	}
-	private void getDice(Properties prop,HashMap<Integer,String> dimHsh,String dimcol,String fact,int factidx) throws Exception
+	private void getDice(Properties prop,HashMap<Integer,String> dimHsh,String dimcol) throws Exception
 	{
 		//dimHsh.put(0, "R1");dimHsh.put(1, "C1");dimHsh.put(4, "P1");
 		List<Double> addrList= new LinkedList<Double>();
@@ -158,7 +146,7 @@ public class ReadData
 			else{addrList.retainAll(getAddr(dimHsh.get(key),key,prop));}
 		}  
 	    HashMap<Double,ArrayList<String>> baser=(HashMap<Double,ArrayList<String>>)getFact(addrList,prop);
-		System.out.println("Dice \t"+fact);
+		printSchema(prop);
 	    for(double d:addrList)
 		{
 			System.out.println(baser.get(d).toString());
@@ -187,5 +175,24 @@ public class ReadData
 	    HashMap<String, LinkedList<Double>> dim = (HashMap<String, LinkedList<Double>>)s.readObject();
 	    s.close();f.close();
 	    return dim;
+	}
+	private void printSchema(Properties prop) throws Exception
+	{
+		FileInputStream fs;ObjectInputStream os;
+		fs=new FileInputStream(prop.getProperty("schemaPath")+"dimSchema");
+		os= new ObjectInputStream(fs);
+		HashMap<Integer,String> dimhsh=(HashMap<Integer,String>)os.readObject();
+		os.close();fs.close();
+		fs=new FileInputStream(prop.getProperty("schemaPath")+"factSchema");
+		os= new ObjectInputStream(fs);
+		HashMap<Integer,String> facthsh=(HashMap<Integer,String>)os.readObject();
+		os.close();fs.close();
+		for(Entry<Integer, String> entry : dimhsh.entrySet()){
+		    System.out.print( entry.getValue() +"||");
+		}
+		for(Entry<Integer, String> entry : facthsh.entrySet()){
+		    System.out.print(entry.getValue() +"||");
+		}
+		System.out.println();
 	}
 }

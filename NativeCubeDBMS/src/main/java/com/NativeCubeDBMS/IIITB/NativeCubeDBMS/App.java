@@ -15,9 +15,10 @@ public class App
     	{
 	    	System.out.println("1.Create Datawarehouse");
 	    	System.out.println("2.Use Existing Datewarehouse");
-	    	System.out.println("3.Exit");
+	    	System.out.println("3.Load New Data In Existing Datewarehouse");
+	    	System.out.println("4.Exit");
 	    	ip=Integer.parseInt(sc.nextLine());
-	    	if(ip>=3 || ip<1)break;
+	    	if(ip>=4 || ip<1)break;
 	    	switch (ip)
 	    	{
 				case 1: 
@@ -33,6 +34,17 @@ public class App
 							prop.load(new FileInputStream(new File(filename+"_config.properties")));
 							readData(prop,filename,sc);
 						}catch (Exception e){System.out.println("database doesnot exist..");}
+						break;
+				case 3: 
+						System.out.println("Enter Datawarehouse Name: ");
+						String dbname=sc.nextLine();prop=new Properties();
+						try
+						{prop.load(new FileInputStream(new File(dbname+"_config.properties")));}
+						catch (Exception e){System.out.println("database doesnot exist..");e.printStackTrace();}
+						System.out.println("Select Datawarehouse file to load(.xlsx): ");
+						filename=sc.nextLine();
+						UpdateDataWareHouse(prop,filename);
+						break;
 				default:break;
 			}
 	    	System.out.println("Do you wish to continue? \n 1->Yes 2->No");
@@ -41,7 +53,8 @@ public class App
     	}
     	sc.close();
     }
-    public static void createDataWareHouse(String filename) throws Exception
+
+	public static void createDataWareHouse(String filename) throws Exception
 	{
 		long startTime = System.currentTimeMillis();
 		filename=filename.substring(0,filename.length()-5);
@@ -54,6 +67,15 @@ public class App
 		genrateDimensionMetaData(prop);
 		System.out.println("Done...");
 		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
+	}
+	private static void UpdateDataWareHouse(Properties prop,String updFile) throws Exception
+	{	
+		long startTime = System.currentTimeMillis();
+		UpdateCubeDB updDb=new UpdateCubeDB();
+		updDb.UpdateBase(prop, updFile);
+		genrateLatticeOfCuboids(prop);
+		System.out.println("Data Loaded Successfully...");
+		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");	
 	}
     private  static void createConfigFile(String filename) throws Exception
     {

@@ -25,6 +25,7 @@ public class MetaDimGenerator
 		for (int i = 1; i < wb.getNumberOfSheets(); i++)
 		{
 			Sheet sheet = wb.getSheetAt(i);
+			if(sheet.getSheetName().equals("Schema")) {continue;}
 			FileOutputStream fos;
 			ObjectOutputStream wo;
 			ArrayList<String> aRow= new ArrayList<String>();
