@@ -1,5 +1,5 @@
 # NativeCubeDBMS
-Native Cube Database Management System for Data Warehouse.
+Native Cube (MOLAP) Database Management System for Data Warehouse.
 # Note:
 1.It is maven project.
 #
